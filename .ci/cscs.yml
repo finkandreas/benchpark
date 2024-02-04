@@ -1,0 +1,54 @@
+include:
+  - remote: 'https://gitlab.com/cscs-ci/recipes/-/raw/master/templates/v2/.ci-ext.yml'
+
+stages:
+  - build
+  - wait
+  - analyze
+
+variables:
+  EXPERIMENT: 'saxpy/cuda'
+  BENCHPARK_SYSTEM: 'CSCS-Daint-HPECray-haswell-P100-Infiniband'
+  FIRECREST_SYSTEM: 'daint'
+  WORKSPACE: '$${CI_CACHE_FOLDER}/benchpark_workspace'
+  JOB_NAME: benchpark-$CI_PIPELINE_ID
+
+
+build software:
+  extends: .f7t-baremetal-runner
+  stage: build
+  script:
+    - module load daint-gpu cray-python
+    - WORKSPACE="$(eval echo $WORKSPACE)"
+    - echo "Using WORKSPACE=$WORKSPACE"
+    - ./bin/benchpark setup $EXPERIMENT $BENCHPARK_SYSTEM $WORKSPACE
+    - source $WORKSPACE/setup.sh
+    - ramble --disable-progress-bar --disable-logger --timestamp -D $WORKSPACE/$EXPERIMENT/$BENCHPARK_SYSTEM/workspace workspace setup
+    - env --chdir=$WORKSPACE SBATCH_JOB_NAME=$JOB_NAME SBATCH_CONSTRAINT=$SLURM_CONSTRAINT SBATCH_ACCOUNT=$SALLOC_ACCOUNT ramble --disable-progress-bar --disable-logger --timestamp -D $WORKSPACE/$EXPERIMENT/$BENCHPARK_SYSTEM/workspace on
+  variables:
+    SLURM_CONSTRAINT: gpu
+    SLURM_PARTITION: debug
+
+wait experiments:
+  extends: .f7t-runner
+  stage: wait
+  timeout: 8h
+  script:
+    - 'while firecrest poll-active --raw --system $FIRECREST_SYSTEM | grep -q $JOB_NAME ; do echo "jobs still running..." ; sleep 60 ; done'
+  variables:
+    MODE: 'f7t-controller'
+    GIT_STRATEGY: none
+
+analyze experiments:
+  extends: .f7t-baremetal-runner
+  stage: analyze
+  script:
+    - module load daint-gpu cray-python
+    - WORKSPACE="$(eval echo $WORKSPACE)"
+    - source $WORKSPACE/setup.sh
+    - ramble --disable-progress-bar --disable-logger -D $WORKSPACE/$EXPERIMENT/$BENCHPARK_SYSTEM/workspace workspace analyze
+    - cat $WORKSPACE/$EXPERIMENT/$BENCHPARK_SYSTEM/workspace/results.latest.txt
+    - 'if grep Status $WORKSPACE/$EXPERIMENT/$BENCHPARK_SYSTEM/workspace/results.latest.txt | grep -v SUCCESS ; then echo "Non successful status found" ; false ; else echo "All tests passed successfully" ; fi'
+  variables:
+    SLURM_CONSTRAINT: gpu
+    SLURM_PARTITION: debug
