@@ -1,0 +1,20 @@
+system_definition:
+  name: Eiger
+  site: CSCS
+  system: HPECray-zen2-Slingshot
+  integrator:
+    vendor: HPECray
+    name:
+  processor:
+    vendor: AMD
+    name: EPYC-7742
+    ISA: x86_64
+    uArch: zen2
+  accelerator:
+    vendor:
+    name:
+    ISA:
+    uArch:
+  interconnect:
+    vendor: HPECray
+    name: Slingshot

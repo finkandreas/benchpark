@@ -1,0 +1,9 @@
+packages:
+  all:
+    providers:
+      mpi:
+      - cray-mpich
+  cray-mpich:
+    externals:
+    - spec: cray-mpich@8.1.28
+      prefix: /user-environment/env/default
