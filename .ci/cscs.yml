@@ -18,7 +18,7 @@ build software:
   extends: .f7t-baremetal-runner
   stage: build
   script:
-    - 'if [[ -z UENV ]] ; then module load daint-gpu cray-python ; fi'
+    - 'if [[ -z $UENV ]] ; then module load daint-gpu cray-python ; fi'
     - WORKSPACE="$(eval echo $WORKSPACE)"
     - echo "Using WORKSPACE=$WORKSPACE"
     - ./bin/benchpark setup $EXPERIMENT $BENCHPARK_SYSTEM $WORKSPACE
@@ -43,7 +43,7 @@ analyze experiments:
   extends: .f7t-baremetal-runner
   stage: analyze
   script:
-    - 'if [[ -z UENV ]] ; then module load daint-gpu cray-python ; fi'
+    - 'if [[ -z $UENV ]] ; then module load daint-gpu cray-python ; fi'
     - WORKSPACE="$(eval echo $WORKSPACE)"
     - source $WORKSPACE/setup.sh
     - ramble --disable-progress-bar --disable-logger -D $WORKSPACE/$EXPERIMENT/$BENCHPARK_SYSTEM/workspace workspace analyze
