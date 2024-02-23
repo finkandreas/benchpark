@@ -8,11 +8,6 @@ packages:
     providers:
       mpi:
       - cray-mpich
-  lapack:
-    externals:
-    - spec: openblas@0.3.23
-      prefix: /user-environment/env/default/lib
-    buildable: false
   cray-mpich:
     externals:
     - spec: cray-mpich@8.1.28
