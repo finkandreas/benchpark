@@ -11,3 +11,5 @@ spack:
       spack_spec: cray-mpich@8.1.28
     compiler-gcc:
       spack_spec: gcc@12.3.0
+    lapack:
+      spack_spec: openblas
