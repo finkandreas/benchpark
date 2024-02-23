@@ -12,4 +12,4 @@ spack:
     compiler-gcc:
       spack_spec: gcc@12.3.0
     lapack:
-      spack_speck: openblas@0.3.23
+      spack_spec: openblas@0.3.23
